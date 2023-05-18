@@ -2,10 +2,11 @@ const express = require('express');
 const app = express();
 const colors = require('colors')
 const dotenv = require('dotenv');
+const cors = require('cors');
+const errorHandler = require('./middleware/error');
+
 
 dotenv.config({ path: './config/config.env' });
-
-const cors = require('cors');
 
 app.use(express.json());
 
@@ -17,6 +18,15 @@ app.use(cors(corsOptions));
 
 const connectDB = require('./config/db');
 connectDB();
+
+//Load route files
+const auth = require('./routes/auth');
+
+//Mount route files
+app.use('/api/auth', auth);
+
+//Handling error controller function
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`.blue.bold));
