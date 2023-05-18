@@ -20,8 +20,20 @@ exports.signup = asyncHandler(async (req, res, next) => {
     })
 });
 
-exports.signin = asyncHandler(async (req, res, next) => {
-    const { email, password, } = req.body;
-    console.log('hello');
-    return;
+exports.getUserInfo = asyncHandler(async (req, res, next) => {
+    console.log(req.user);
+    if (!req.user) return next(new ErrorResponse('Not authenticated', 409));
+    return res.status(200).json({
+        success: true,
+        user: req.user
+    })
+});
+
+exports.signout = asyncHandler(async (req, res, next) => {
+    req.logout((err) => {
+        if (err) return next(err)
+    });
+    return res.status(200).json({
+        success: true
+    })
 });
