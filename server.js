@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 const corsOptions = {
     credentials: true,
-    origin: process.env.ENV === 'dev' ? 'http://localhost:3000' : 'https://chat-app-frontend-silk.vercel.app/'
+    origin: process.env.ENV === 'dev' ? 'http://localhost:3000' : 'https://chat-app-frontend-silk.vercel.app'
 }
 app.use(cors(corsOptions));
 
