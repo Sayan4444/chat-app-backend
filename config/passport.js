@@ -10,12 +10,12 @@ const initializingPassport = (passport) => {
             try {
                 const user = await User.findOne({ email });
 
-                if (!user) done(null, false, { message: 'Incorrect username or password' });
+                if (!user) done(null, false);
                 const isSame = await bcrypt.compare(password, user.password);
-                if (!isSame) done(null, false, { message: 'Incorrect username or password' });
+                if (!isSame) done(null, false);
                 return done(null, user);
             } catch (error) {
-                return done(error, false, { message: 'Incorrect username or password' });
+                return done(error, false);
             }
 
         }
