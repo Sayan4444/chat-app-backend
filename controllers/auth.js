@@ -1,27 +1,66 @@
-const User = require('../model/User.js');
-const asyncHandler = require('../middleware/async');
-const ErrorResponse = require('../utils/errorResponse.js');
-const bcrypt = require('bcrypt');
+const asyncHandler = require("../middleware/async");
+const User = require("../model/User");
+const ErrorResponse = require("../utils/errorResponse")
 
-exports.signup = asyncHandler(async (req, res, next) => {
-    const { name, email, password, picture } = req.body;
-    //checking if user already exsists
+exports.signup = asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body;
+    await User.create({ name, email, password });
     const user = await User.findOne({ email });
-    if (user) return next(new ErrorResponse('User already exsists', 409));
-
-    const salt = await bcrypt.genSalt(10);
-    const passwordHashed = await bcrypt.hash(password, salt);
-
-    //Create user
-    await User.create({ name, email, password: passwordHashed, picture: 'abc' })
-
-    return res.status(201).json({
-        success: true
-    })
-});
+    res.status(201);
+    sendTokenResponse(user, res);
+})
 
 exports.signin = asyncHandler(async (req, res, next) => {
-    const { email, password, } = req.body;
-    console.log('hello');
-    return;
+    const { email, password } = req.body;
+    //Check for user
+    let user = await User.findOne({ email });
+    if (!user) next(new ErrorResponse('Invalid credentials', 401))
+    //Checking if password matches
+
+    const isSame = await user.matchPassword(password);
+    if (!isSame) next(new ErrorResponse('Invalid credentials', 401))
+    user = await User.findOne({ email });
+    sendTokenResponse(user, res);
 });
+
+exports.signout = (req, res) => {
+    const options = {
+        httpOnly: true,
+        secure: false,
+    }
+    if (process.env.ENV !== 'dev') {
+        options.secure = true;
+        options.sameSite = 'none'
+    }
+    res
+        .clearCookie('token', options)
+        .status(200).json({
+            success: true,
+            data: {}
+        })
+}
+
+exports.getMe = (req, res) => {
+    res.status(200).json({
+        success: true,
+        user: req.user
+    })
+}
+
+function sendTokenResponse(user, res) {
+    const token = user.createJwtToken();
+    const options = {
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: false,
+    }
+    if (process.env.ENV !== 'dev') {
+        options.secure = true;
+        options.sameSite = 'none'
+    }
+    res.cookie('token', token, options)
+    return res.json({
+        success: true,
+        user
+    })
+}

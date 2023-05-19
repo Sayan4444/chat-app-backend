@@ -2,30 +2,31 @@ const express = require('express');
 const app = express();
 const colors = require('colors')
 const dotenv = require('dotenv');
-const cors = require('cors');
-const errorHandler = require('./middleware/error');
-
+const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config/config.env' });
 
+const cors = require('cors');
+
 app.use(express.json());
+app.use(cookieParser());
 
 const corsOptions = {
     credentials: true,
-    origin: process.env.ENV === 'dev' ? 'http://localhost:3000' : 'https://chat-app-frontend-silk.vercel.app'
+    origin: process.env.ENV === 'dev' ? 'http://localhost:3000' : 'https://chat-app-frontend-silk.vercel.app/'
 }
 app.use(cors(corsOptions));
+
+
 
 const connectDB = require('./config/db');
 connectDB();
 
-//Load route files
-const auth = require('./routes/auth');
+const authRouter = require('./routes/auth');
+const errorHandler = require('./middleware/error');
 
-//Mount route files
-app.use('/api/auth', auth);
+app.use('/api/auth', authRouter);
 
-//Handling error controller function
 app.use(errorHandler);
 
 const PORT = process.env.PORT;
