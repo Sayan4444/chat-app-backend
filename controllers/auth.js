@@ -3,8 +3,10 @@ const User = require("../model/User");
 const ErrorResponse = require("../utils/errorResponse")
 
 exports.signup = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
-    await User.create({ name, email, password });
+    const { email, picture } = req.body;
+    const obj = { ...req.body };
+    if (picture.length === 0) delete obj.picture
+    await User.create(obj);
     const user = await User.findOne({ email });
     res.status(201);
     sendTokenResponse(user, res);

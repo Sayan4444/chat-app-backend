@@ -9,14 +9,12 @@ const errorHandler = (err, req, res, next) => {
         options.secure = true;
         options.sameSite = 'none'
     }
-    console.log(err);
-    console.log(err.code);
     if (err.code === 11000)
         return res.json({
             success: false,
             error: "Email already exsists"
         })
-
+    if (err.statusCode) res.clearCookie('token', options)
     return res
         .status(err.statusCode)
         .json({
