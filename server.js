@@ -23,10 +23,14 @@ const connectDB = require('./config/db');
 connectDB();
 
 const authRouter = require('./routes/auth');
-const errorHandler = require('./middleware/error');
+const userRouter = require('./routes/user');
+const chatRouter = require('./routes/chat');
 
 app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
+app.use('/api/chat', chatRouter);
 
+const errorHandler = require('./middleware/error');
 app.use(errorHandler);
 
 const PORT = process.env.PORT;

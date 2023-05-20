@@ -15,7 +15,7 @@ exports.signup = asyncHandler(async (req, res) => {
 exports.signin = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
     //Check for user
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).select('password');
     if (!user) next(new ErrorResponse('Invalid credentials', 401))
     //Checking if password matches
 
