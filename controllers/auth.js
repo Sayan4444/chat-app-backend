@@ -43,10 +43,15 @@ exports.signout = (req, res) => {
 }
 
 exports.getMe = (req, res) => {
-    res.status(200).json({
-        success: true,
-        user: req.user
-    })
+    if (req.query.userData)
+        res.status(200).json({
+            success: true,
+            user: req.user
+        })
+    else
+        res.status(200).json({
+            success: true,
+        })
 }
 
 function sendTokenResponse(user, res) {

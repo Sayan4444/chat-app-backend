@@ -5,8 +5,9 @@ const ErrorResponse = require('../utils/errorResponse.js');
 
 exports.protect = asyncHandler(async (req, res, next) => {
     let token;
-    if (req.cookies.token) token = req.cookies.token;
-    else return next(new ErrorResponse('Unauthorized', 401));
+    token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) return next(new ErrorResponse('Unauthorized', 401));
 
     //Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
