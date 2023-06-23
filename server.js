@@ -1,37 +1,32 @@
 const express = require('express');
 const app = express();
-const colors = require('colors')
-const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
-
-dotenv.config({ path: './config/config.env' });
-
+const { createServer } = require('http')
+const { Server } = require("socket.io")
 const cors = require('cors');
+const dotenv = require('dotenv');
 
-app.use(express.json({ limit: '50mb' }));
-app.use(cookieParser());
-
-const corsOptions = {
-    credentials: true,
-    origin: process.env.ENV === 'dev' ? 'http://localhost:3000' : 'https://chat-app-frontend-silk.vercel.app'
-}
-app.use(cors(corsOptions));
+dotenv.config({ path: './config.env' });
 
 
+app.use(cors())
 
-const connectDB = require('./config/db');
-connectDB();
+const server = createServer(app)
 
-const authRouter = require('./routes/auth');
-const userRouter = require('./routes/user');
-const chatRouter = require('./routes/chat');
+const io = new Server(server, {
+    pingTimeout: 60 * 1000,
+    cors: {
+        origin: process.env.FRONTEND_URL
+    }
+})
 
-app.use('/api/auth', authRouter);
-app.use('/api/user', userRouter);
-app.use('/api/chat', chatRouter);
+io.on('connection', (socket) => {
+    socket.on("join_room", (room) => {
+        socket.join(room)
+    })
 
-const errorHandler = require('./middleware/error');
-app.use(errorHandler);
-
+    socket.on("send_message", (messageObj) => {
+        socket.to(messageObj.chatId).emit("receive_message", messageObj)
+    });
+})
 const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`.blue.bold));
+server.listen(4000, () => console.log('SERVER CREATED'))
