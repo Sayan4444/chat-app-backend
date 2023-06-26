@@ -27,6 +27,11 @@ io.on('connection', (socket) => {
     socket.on("send_message", (messageObj) => {
         socket.to(messageObj.chatId).emit("receive_message", messageObj)
     });
+
+    socket.off("join_room", () => {
+        socket.leave(room);
+    });
+
 })
 const PORT = process.env.PORT;
-server.listen(4000, () => console.log('SERVER CREATED'))
+server.listen(PORT, () => console.log('SERVER CREATED'))
