@@ -7,8 +7,11 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: './config.env' });
 
-
-app.use(cors())
+const corsOptions = {
+    credentials: true,
+    origin: process.env.FRONTEND_URL
+}
+app.use(cors(corsOptions))
 
 const server = createServer(app)
 
@@ -20,18 +23,21 @@ const io = new Server(server, {
 })
 
 io.on('connection', (socket) => {
-    socket.on("join_room", (room) => {
-        socket.join(room)
+    socket.on("setup", (userId) => {
+        socket.join(userId)
     })
 
     socket.on("send_message", (messageObj) => {
-        socket.to(messageObj.chatId).emit("receive_message", messageObj)
+        const { chat, sender } = messageObj;
+        chat.users.forEach((user) => {
+            if (user._id === sender._id) return;
+            socket.in(user._id).emit("receive_message", messageObj)
+        })
     });
 
-    socket.off("join_room", () => {
-        socket.leave(room);
-    });
-
+    // socket.off("setup", () => {
+    //     socket.leave(userId);
+    // });
 })
 const PORT = process.env.PORT;
 server.listen(PORT, () => console.log('SERVER CREATED'))
